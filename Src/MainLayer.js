@@ -308,15 +308,15 @@ var MainLayer = cc.LayerColor.extend({
 				markerY = winSize.height;
 				break;
 			case 3:
-				markerX = (winSize.width/3)*2;
+				var spaceBetween = winSize.width/2;
+				var padding = spaceBetween/2;
+				var x = padding + spaceBetween
+				markerX = x
 				markerY = winSize.height;
 				break;
 			case 4:
-				var spaceBetween = winSize.width/2;
-				var padding = spaceBetween/2;
-				var x = padding + spaceBetween;
 				markerX = winSize.width;
-				markerY = x;
+				markerY = winSize.height/1.5;
 				break;
 			default:
 				//do nothing
