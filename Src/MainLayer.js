@@ -23,6 +23,8 @@ var audioEngine = cc.AudioEngine.getInstance();
 var MainLayer = cc.LayerColor.extend({
 	_isFivePlayer: true,
 	Cards: [],
+	BidOptions: [0, 4, 5, 6, 7, 8],
+	HighestCurrentBid: 0,
 	Players:[],
 	CurrentCardIndexForDealing: 0, //dumb thing used for dealering 2 /3 / 2 to players...needs refactor, not an important var
 	CurrentDealerIndex: 0,
@@ -58,7 +60,61 @@ var MainLayer = cc.LayerColor.extend({
 
 		this.displayDealerChip();
 		this.displayCurrentPlayersTurnIndicator();
+
+		this.doBidding();
 	
+	},
+	doBidding: function () {
+		if(this.Players[this.CurrentPlayersTurnIndex].isHuman){
+			this.displayHumanPLayerBidOptions();
+		}else{
+			this.doComputerPlayersBid();
+		}
+	},
+	doComputerPlayersBid: function () {
+		if(this.HighestCurrentBid < 4){
+			this.updateBid(4);
+		}else{
+			this.updateBid(0);
+		}
+	},
+	updateBid: function (bidValue) {
+		if(bidValue > this.HighestCurrentBid){
+
+			var i = this.CurrentPlayersTurnIndex;
+			this.Players[i].Bid = bidValue;
+
+			for(var k = 0; k < this.BidOptions.length; k++){
+				var bidItem = this.BidOptions[k];
+				if(bidItem !== 0 && bidItem < bidValue){
+					this.BidOptions.splice(k, 1);
+				}
+			}
+		}else{
+			cc.log("Sorry that is not the highest bid, try again.");
+		}
+	},
+	displayHumanPLayerBidOptions: function () {
+		var xCords = winSize.width/3;
+		var yCords = 345;
+		var spacing = 125
+
+		for(var i = 0; i < this.BidOptions.length; i++){
+			var bidTxt = this.BidOptions[i];
+			if(i === 0){
+				xCords = xCords - 85;
+				bidTxt = "Pass";
+			}
+			if(i === 1){
+				xCords = xCords + 45;
+			}
+			var bidOpt = cc.LabelTTF.create(bidTxt, "Arial", 55);;
+        	
+        	bidOpt.setColor(cc.c3b(0,0,0));
+        	bidOpt.setPosition(new cc.Point(xCords, yCords));
+        	this.addChild(bidOpt);
+			xCords = spacing + xCords;
+		}
 	},
 	createCards: function () {
 		var cache = cc.SpriteFrameCache.getInstance();
