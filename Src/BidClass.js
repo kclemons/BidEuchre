@@ -20,15 +20,17 @@ var chooseRandomDealerFunc = function(maxValue){
 
 var audioEngine = cc.AudioEngine.getInstance();
 
-var MainLayer = cc.LayerColor.extend({
+var BidClass = cc.LayerColor.extend({
 	_isFivePlayer: true,
 	Cards: [],
+	GameStatus: 'Bidding',
 	BidOptions: [0, 4, 5, 6, 7, 8],
 	HighestCurrentBid: 0,
 	Players:[],
 	CurrentCardIndexForDealing: 0, //dumb thing used for dealering 2 /3 / 2 to players...needs refactor, not an important var
 	CurrentDealerIndex: 0,
 	CurrentPlayersTurnIndex: 0,
+	OriginalTurnIndex: 0,
 	HumanPlayerIndex: 0,
 	GameTitle: "Bid Euchre",
 	ctor: function () {
@@ -61,8 +63,24 @@ var MainLayer = cc.LayerColor.extend({
 		this.displayDealerChip();
 		this.displayCurrentPlayersTurnIndicator();
 
-		this.doBidding();
-	
+		for(var i = 0; i < this.Players.length; i++){
+			this.doBidding();
+			if(this.CurrentPlayersTurnIndex === this.Players.length-1){
+				this.CurrentPlayersTurnIndex = 0;
+				if(this.CurrentPlayersTurnIndex === this.OriginalTurnIndex){
+					this.CallTrump();
+					cc.log("call Trump!");
+				}
+			}else{
+				this.CurrentPlayersTurnIndex = this.CurrentPlayersTurnIndex + 1;
+				if(this.CurrentPlayersTurnIndex === this.OriginalTurnIndex){
+					this.CallTrump();
+					cc.log("call Trump!");
+				}
+			}
+			cc.DelayTime.create(1);
+			this.displayCurrentPlayersTurnIndicator();
+		}	
 	},
 	doBidding: function () {
 		if(this.Players[this.CurrentPlayersTurnIndex].isHuman){
@@ -70,6 +88,9 @@ var MainLayer = cc.LayerColor.extend({
 		}else{
 			this.doComputerPlayersBid();
 		}
+	},
+	CallTrump: function () {
+		//call that trump SONNNN...
 	},
 	doComputerPlayersBid: function () {
 		if(this.HighestCurrentBid < 4){
@@ -79,6 +100,7 @@ var MainLayer = cc.LayerColor.extend({
 		}
 	},
 	updateBid: function (bidValue) {
+		cc.log("bid " + bidValue);
 		if(bidValue > this.HighestCurrentBid){
 
 			var i = this.CurrentPlayersTurnIndex;
@@ -90,6 +112,7 @@ var MainLayer = cc.LayerColor.extend({
 					this.BidOptions.splice(k, 1);
 				}
 			}
+			//cc.log(JSON.stringify(this.BidOptions));
 		}else{
 			cc.log("Sorry that is not the highest bid, try again.");
 		}
@@ -235,6 +258,7 @@ var MainLayer = cc.LayerColor.extend({
 		this.Players = tempPlayersArr;
 
 		this.CurrentDealerIndex = chooseRandomDealerFunc(5) - 1;
+
 		//if the dealer isn't the last player in the loop
 		//then we want to make the currentPersonSTurn currDealrIdnx + 1;
 		//otherwise the dealer is the last player so we make
@@ -244,6 +268,7 @@ var MainLayer = cc.LayerColor.extend({
 		}else{
 			this.CurrentPlayersTurnIndex = 0;
 		}
+		this.OriginalTurnIndex = this.CurrentPlayersTurnIndex;
 		//set the dealer
 		this.Players[this.CurrentDealerIndex].isDealer = true;
 
@@ -337,7 +362,7 @@ var MainLayer = cc.LayerColor.extend({
 			break;
 		default: 
 			//do nothing
-			cc.log('captain, we have a serious problem...somehow the dealer managed to go unassigned. func: displayDealerChip of MainLayer.js');
+			cc.log('captain, we have a serious problem...somehow the dealer managed to go unassigned. func: displayDealerChip of BidClass.js');
 			break;
 		}
 		dealerChip.setPosition(new cc.Point(markerX, markerY));
@@ -441,14 +466,6 @@ var MainLayer = cc.LayerColor.extend({
 			var plyrIndex = j;
 			this.dealNextCards(3, plyrIndex);
 		}
-
-		for(var sillyLogCheck = 0; sillyLogCheck < this.Players.length; sillyLogCheck++){
-			cc.log("userIndex: " + sillyLogCheck + ", PlayerID: " + this.Players[sillyLogCheck].PlayerId + ", IsDealer:" + this.Players[sillyLogCheck].isDealer
-				+ ", isHuman:" + this.Players[sillyLogCheck].isHuman);
-			for(var nununun = 0; nununun < this.Players[sillyLogCheck].Cards.length; nununun++){
-				cc.log("cardId: " + this.Players[sillyLogCheck].Cards[nununun].CardId + ", card: " + this.Players[sillyLogCheck].Cards[nununun].CardName + " of "+ this.Players[sillyLogCheck].Cards[nununun].CardSuit);
-			}
-		}
 		
 	},
 	dealNextCards: function(numCardsToDeal, playerIndex){
@@ -458,9 +475,47 @@ var MainLayer = cc.LayerColor.extend({
 			this.CurrentCardIndexForDealing = this.CurrentCardIndexForDealing+1;
 		}
 	},
+	checkHumanPlayersBid: function (loc){
+		var xCords = loc.x;
+        var yCords = loc.y;
+        if(yCords < 370 && yCords > 325){
+        	if(xCords > 335 && xCords < 455){
+        		//player is passing
+        		this.updateBid(0);
+        	}else if(xCords > 550 && xCords < 580){
+        		//bid 4
+        		this.updateBid(4);
+        	}else if(xCords > 675 && xCords < 705){
+        		//bid 5
+        		this.updateBid(5);
+        	}else if(xCords > 800 && xCords < 830){
+        		//bid 6
+        		this.updateBid(6);
+        	}else if(xCords > 925 && xCords < 955){
+        		//bid 7
+        		this.updateBid(7);
+        	}else if(xCords > 1050 && xCords < 1080){
+        		//bid 8
+        		this.updateBid(8);
+        	}
+        }
+        
+	},
 	locationTapped: function(location){ 
 		/*audioEngine.playEffect(s_shootEffect);*/
-
+		if(this.CurrentPlayersTurnIndex === 0){
+			switch(this.GameStatus){
+					case 'Bidding':
+					this.checkHumanPlayersBid(location);
+					break;
+				case 'Playing':
+				//idk what to do here
+					break;
+				default:
+					//do nothing
+					break;
+			}
+		}
 	},
 	onMouseUp: function (event){
 		var location = event.getLocation();
@@ -479,17 +534,17 @@ var MainLayer = cc.LayerColor.extend({
 	}
 });
 
-MainLayer.create = function (isFivePlayer) {
-	var sg = new MainLayer();
+BidClass.create = function (isFivePlayer) {
+	var sg = new BidClass();
 	if(sg && sg.init(cc.c4b(0,75,35,255))) {
 		return sg;
 	}
 	return null;
 };
 
-MainLayer.scene = function (isFivePlayer) {
+BidClass.scene = function (isFivePlayer) {
 	var scene = cc.Scene.create(isFivePlayer);
-	var layer = MainLayer.create(isFivePlayer);
+	var layer = BidClass.create(isFivePlayer);
 	scene._isFivePlayer = isFivePlayer;
 	scene.addChild(layer);
 

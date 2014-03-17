@@ -17,7 +17,7 @@
         appFiles:[
             './Src/resource.js',
             './Src/StartGameMenu.js',
-    		'./Src/MainLayer.js',
+    		'./Src/BidClass.js',
 			'./Src/GameOver.js',
  			'./Src/main.js'
         ]

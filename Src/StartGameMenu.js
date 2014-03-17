@@ -63,7 +63,7 @@ var StartGameMenu = cc.LayerColor.extend({
                 this.runAction(cc.Sequence.create(
                     cc.DelayTime.create(0.1),
                     cc.CallFunc.create(function(node) {
-                        var scene = MainLayer.scene(true);
+                        var scene = BidClass.scene(true);
                         cc.Director.getInstance().replaceScene(scene);
                     }, this)
                 ));
