@@ -75,20 +75,8 @@ var BidClass = cc.LayerColor.extend({
 		}else{
 			this.setupAiBidLogic();
 		}
-	}
-	setupAiBidLogic: function (isFirstCall){
-		cc.log(this.CurrentPlayersTurnIndex);
-		if(isFirstCall){
-			this.doComputerPlayersBid();
-			this.CurrentPlayersTurnIndex = (this.CurrentPlayersTurnIndex !== 4) ? this.CurrentPlayersTurnIndex + 1 : 0;
-			cc.log('new index for turn ===' + this.CurrentPlayersTurnIndex);	
-		}else{
-			if(this.CurrentPlayersTurnIndex !== this.OriginalTurnIndex){
-				this.doComputerPlayersBid();
-				this.CurrentPlayersTurnIndex = (this.CurrentPlayersTurnIndex !== 4) ? this.CurrentPlayersTurnIndex + 1 : 0;
-				cc.log('new index for turn ===' + this.CurrentPlayersTurnIndex);
-			}
-		}
+	},
+	setupAiBidLogic: function (){
 		
 	},
 	determineTrump: function () {
@@ -109,12 +97,12 @@ var BidClass = cc.LayerColor.extend({
 			var i = this.CurrentPlayersTurnIndex;
 			this.Players[i].Bid = bidValue;
 			//find a way to grey out or change the bid value color
-			for(var k = 0; k < this.BidOptions.length; k++){
+			/*for(var k = 0; k < this.BidOptions.length; k++){
 				var bidItem = this.BidOptions[k];
 				if(bidItem !== 0 && bidItem < bidValue){
 					this.BidOptions.splice(k, 1);
 				}
-			}
+			}*/
 			this.HighestCurrentBid = bidValue;
 		}
 	},
