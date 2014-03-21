@@ -22,14 +22,17 @@ var audioEngine = cc.AudioEngine.getInstance();
 
 var BidClass = cc.LayerColor.extend({
 	_isFivePlayer: true,
+	FirstTurnIsHuman: false,
 	Cards: [],
 	GameStatus: 'Bidding',
 	BidOptions: [0, 4, 5, 6, 7, 8],
 	HighestCurrentBid: 0,
+	IndexOfBidWinner: 0,
 	Players:[],
 	CurrentCardIndexForDealing: 0, //dumb thing used for dealering 2 /3 / 2 to players...needs refactor, not an important var
 	CurrentDealerIndex: 0,
 	CurrentPlayersTurnIndex: 0,
+	IndicatorToRemove: 0,
 	OriginalTurnIndex: 0,
 	HumanPlayerIndex: 0,
 	GameTitle: "Bid Euchre",
@@ -39,7 +42,6 @@ var BidClass = cc.LayerColor.extend({
 	},
 	onEnter: function () {
 		this._super();
-		cc.log("onEnter called");
 		if('touches' in sys.capabilities){
 			this.setTouchEnabled(true);
 		}
@@ -63,61 +65,60 @@ var BidClass = cc.LayerColor.extend({
 		this.displayDealerChip();
 		this.displayCurrentPlayersTurnIndicator();
 
-		for(var i = 0; i < this.Players.length; i++){
-			this.doBidding();
-			if(this.CurrentPlayersTurnIndex === this.Players.length-1){
-				this.CurrentPlayersTurnIndex = 0;
-				if(this.CurrentPlayersTurnIndex === this.OriginalTurnIndex){
-					this.CallTrump();
-					cc.log("call Trump!");
-				}
-			}else{
-				this.CurrentPlayersTurnIndex = this.CurrentPlayersTurnIndex + 1;
-				if(this.CurrentPlayersTurnIndex === this.OriginalTurnIndex){
-					this.CallTrump();
-					cc.log("call Trump!");
-				}
-			}
-			cc.DelayTime.create(1);
-			this.displayCurrentPlayersTurnIndicator();
-		}	
+		this.setupBidLogic();		
+		
 	},
-	doBidding: function () {
-		if(this.Players[this.CurrentPlayersTurnIndex].isHuman){
-			this.displayHumanPLayerBidOptions();
+	setupBidLogic: function () {
+
+		if(this.OriginalTurnIndex === 0){
+			this.displayHumanPlayerBidOptions();
 		}else{
-			this.doComputerPlayersBid();
+			this.setupAiBidLogic();
 		}
+	}
+	setupAiBidLogic: function (isFirstCall){
+		cc.log(this.CurrentPlayersTurnIndex);
+		if(isFirstCall){
+			this.doComputerPlayersBid();
+			this.CurrentPlayersTurnIndex = (this.CurrentPlayersTurnIndex !== 4) ? this.CurrentPlayersTurnIndex + 1 : 0;
+			cc.log('new index for turn ===' + this.CurrentPlayersTurnIndex);	
+		}else{
+			if(this.CurrentPlayersTurnIndex !== this.OriginalTurnIndex){
+				this.doComputerPlayersBid();
+				this.CurrentPlayersTurnIndex = (this.CurrentPlayersTurnIndex !== 4) ? this.CurrentPlayersTurnIndex + 1 : 0;
+				cc.log('new index for turn ===' + this.CurrentPlayersTurnIndex);
+			}
+		}
+		
 	},
-	CallTrump: function () {
+	determineTrump: function () {
 		//call that trump SONNNN...
 	},
 	doComputerPlayersBid: function () {
 		if(this.HighestCurrentBid < 4){
 			this.updateBid(4);
+			cc.log('ai bid 4');
 		}else{
 			this.updateBid(0);
+			cc.log('ai bid pass');
 		}
 	},
 	updateBid: function (bidValue) {
-		cc.log("bid " + bidValue);
 		if(bidValue > this.HighestCurrentBid){
 
 			var i = this.CurrentPlayersTurnIndex;
 			this.Players[i].Bid = bidValue;
-
+			//find a way to grey out or change the bid value color
 			for(var k = 0; k < this.BidOptions.length; k++){
 				var bidItem = this.BidOptions[k];
 				if(bidItem !== 0 && bidItem < bidValue){
 					this.BidOptions.splice(k, 1);
 				}
 			}
-			//cc.log(JSON.stringify(this.BidOptions));
-		}else{
-			cc.log("Sorry that is not the highest bid, try again.");
+			this.HighestCurrentBid = bidValue;
 		}
 	},
-	displayHumanPLayerBidOptions: function () {
+	displayHumanPlayerBidOptions: function () {
 		var xCords = winSize.width/3;
 		var yCords = 345;
 		var spacing = 125
@@ -372,6 +373,7 @@ var BidClass = cc.LayerColor.extend({
 		var currentTurnIndicator = cc.Sprite.create(currentTurnImg);
 		var markerX = 0;
 		var markerY = 0;
+		this.removeChild(this.IndicatorToRemove); //remove the old indicator before adding a new idicator
 		switch(this.CurrentPlayersTurnIndex){
 			case 0: //human is up
 				markerX = winSize.width/2;
@@ -406,6 +408,7 @@ var BidClass = cc.LayerColor.extend({
 
 		}
 		currentTurnIndicator.setPosition(new cc.Point(markerX, markerY));
+		this.IndicatorToRemove = currentTurnIndicator;
 		this.addChild(currentTurnIndicator);
 	},
 	displayHumanPlayersCards: function () {
@@ -504,17 +507,7 @@ var BidClass = cc.LayerColor.extend({
 	locationTapped: function(location){ 
 		/*audioEngine.playEffect(s_shootEffect);*/
 		if(this.CurrentPlayersTurnIndex === 0){
-			switch(this.GameStatus){
-					case 'Bidding':
-					this.checkHumanPlayersBid(location);
-					break;
-				case 'Playing':
-				//idk what to do here
-					break;
-				default:
-					//do nothing
-					break;
-			}
+			this.checkHumanPlayersBid(location);
 		}
 	},
 	onMouseUp: function (event){
