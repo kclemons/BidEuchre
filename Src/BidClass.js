@@ -457,6 +457,14 @@ var BidClass = cc.LayerColor.extend({
 			var plyrIndex = j;
 			this.dealNextCards(3, plyrIndex);
 		}
+
+		for(var m =0; m < this.Players.length; m++){
+			var ply = this.Players[m];
+			cc.log("player " + m);
+			for(var x = 0; x < ply.Cards.length; x++){
+				cc.log(ply.Cards[x]);
+			}
+		}
 		
 	},
 	dealNextCards: function(numCardsToDeal, playerIndex){
