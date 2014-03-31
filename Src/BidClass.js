@@ -3,16 +3,6 @@
 //2. assign the 4 pc players names, x and y cords, etc are stored in their perspective array.
 //3. per josh: deal out 1 cards to each player until they're gone. ((possibly in a randomized order for the player array)
 
-var shuffleArrayHelperFunc = function(shuffleArr) {
-    for (var i = shuffleArr.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = shuffleArr[i];
-        shuffleArr[i] = shuffleArr[j];
-        shuffleArr[j] = temp;
-    }
-    return shuffleArr;
-};
-
 var chooseRandomDealerFunc = function(maxValue){
 		var randNumber = Math.floor(Math.random() * maxValue) + 1;
 		return randNumber;
@@ -65,15 +55,34 @@ var BidClass = cc.LayerColor.extend({
 		this.displayDealerChip();
 		this.displayCurrentPlayersTurnIndicator();
 
-		this.setupBidLogic();		
+		//figure out original start index
+		//loop through players from orgin start index
+		//		have code aware that we don't go past 4, we go back to 0 at that point
+		//check if human player
+		//    break out and wait for human to provide input
+		//start back into the loop until all players have bid....
+		switch(this.OriginalTurnIndex){
+			case 0:
+				break;  
+			default:
+				break;
+		}
+		this.setupBidLogic(0, 4, true);		
 		
 	},
-	setupBidLogic: function () {
+	setupBidLogic: function (startVal, endVal, initialCall) {
 
-		if(this.OriginalTurnIndex === 0){
-			this.displayHumanPlayerBidOptions();
-		}else{
-			this.setupAiBidLogic();
+		for(var i = startVal; i < endval; i++){
+			var currentPlayer = this.Players[i];
+			if(!initialCall && i === this.OriginalTurnIndex){
+				cc.log('bidding complete!');
+			}else if(currentPlayer.isHuman){
+				this.displayHumanPlayersBidOptions();
+				cc.log('users is bidding so we break out and wait for him to finish');
+				return;
+			}else{
+				this.setupAiBidLogic();
+			}
 		}
 	},
 	setupAiBidLogic: function (){
@@ -107,9 +116,12 @@ var BidClass = cc.LayerColor.extend({
 		}
 	},
 	displayHumanPlayerBidOptions: function () {
+
 		var xCords = winSize.width/3;
 		var yCords = 345;
-		var spacing = 125
+		var spacing = 125;
+
+		this.GameStatus = "HumanBidding";
 
 		for(var i = 0; i < this.BidOptions.length; i++){
 			var bidTxt = this.BidOptions[i];
@@ -481,28 +493,34 @@ var BidClass = cc.LayerColor.extend({
         	if(xCords > 335 && xCords < 455){
         		//player is passing
         		this.updateBid(0);
+        		this.GameStatus = "Bidding";
         	}else if(xCords > 550 && xCords < 580){
         		//bid 4
         		this.updateBid(4);
+        		this.GameStatus = "Bidding";
         	}else if(xCords > 675 && xCords < 705){
         		//bid 5
         		this.updateBid(5);
+        		this.GameStatus = "Bidding";
         	}else if(xCords > 800 && xCords < 830){
         		//bid 6
         		this.updateBid(6);
+        		this.GameStatus = "Bidding";
         	}else if(xCords > 925 && xCords < 955){
         		//bid 7
         		this.updateBid(7);
+        		this.GameStatus = "Bidding";
         	}else if(xCords > 1050 && xCords < 1080){
         		//bid 8
         		this.updateBid(8);
+        		this.GameStatus = "Bidding";
         	}
         }
         
 	},
 	locationTapped: function(location){ 
 		/*audioEngine.playEffect(s_shootEffect);*/
-		if(this.CurrentPlayersTurnIndex === 0){
+		if(this.CurrentPlayersTurnIndex === 0 && this.GameStatus === "HumanBidding"){
 			this.checkHumanPlayersBid(location);
 		}
 	},
