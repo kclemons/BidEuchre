@@ -24,6 +24,10 @@ var BidClass = cc.LayerColor.extend({
 	CurrentPlayersTurnIndex: 0,
 	IndicatorToRemove: 0,
 	OriginalTurnIndex: 0,
+	initialCall: true,
+	StartVal: 0,
+	EndVal: 4,
+	FirstBid: true,
 	HumanPlayerIndex: 0,
 	GameTitle: "Bid Euchre",
 	ctor: function () {
@@ -61,35 +65,44 @@ var BidClass = cc.LayerColor.extend({
 		//check if human player
 		//    break out and wait for human to provide input
 		//start back into the loop until all players have bid....
-		switch(this.OriginalTurnIndex){
-			case 0:
-				break;  
-			default:
-				break;
+		if(this.OriginalTurnIndex === 0){
+			this.StartVal = this.OriginalTurnIndex;
+			this.EndVal = 4;
+		}else{
+			this.StartVal = this.OriginalTurnIndex;
+			this.EndVal = this.OriginalTurnIndex -1;
 		}
-		this.setupBidLogic(0, 4, true);		
+		this.setupBidLogic();
+				
 		
 	},
-	setupBidLogic: function (startVal, endVal, initialCall) {
-
-		for(var i = startVal; i < endval; i++){
+	setupBidLogic: function () {
+		cc.log(this.initialCall + ",  " + this.StartVal + ",  " +  this.EndVal);
+		for(var i = this.StartVal; i < this.EndVal; i++){
 			var currentPlayer = this.Players[i];
-			if(!initialCall && i === this.OriginalTurnIndex){
+			if(!this.initialCall && i === this.OriginalTurnIndex){
 				cc.log('bidding complete!');
 			}else if(currentPlayer.isHuman){
 				this.displayHumanPlayersBidOptions();
 				cc.log('users is bidding so we break out and wait for him to finish');
 				return;
 			}else{
+				cc.log('else');
 				this.setupAiBidLogic();
+			}
+			if(i === 4 && this.OriginalTurnIndex !== 0){
+				i = 0;
 			}
 		}
 	},
 	setupAiBidLogic: function (){
-		
+		cc.log("called");
 	},
 	determineTrump: function () {
 		//call that trump SONNNN...
+	},
+	displayHumanPlayerBidOptions: function(){
+		cc.log('human');
 	},
 	doComputerPlayersBid: function () {
 		if(this.HighestCurrentBid < 4){
