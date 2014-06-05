@@ -81,9 +81,6 @@ var BidClass = cc.LayerColor.extend({
 	determineTrump: function () {
 		//call that trump SONNNN...
 	},
-	displayHumanPlayerBidOptions: function(){
-		cc.log('human');
-	},
 	doComputerPlayersBid: function () {
 		if(this.HighestCurrentBid < 4){
 			this.updateBid(4);
@@ -298,36 +295,15 @@ var BidClass = cc.LayerColor.extend({
 		}
 	},
 	checkHumanPlayersBid: function (loc){
-		var xCords = loc.x;
-        var yCords = loc.y;
-        if(yCords < 370 && yCords > 325){
-        	if(xCords > 335 && xCords < 455){
-        		//player is passing
-        		this.updateBid(0);
-        		this.GameStatus = "Bidding";
-        	}else if(xCords > 550 && xCords < 580){
-        		//bid 4
-        		this.updateBid(4);
-        		this.GameStatus = "Bidding";
-        	}else if(xCords > 675 && xCords < 705){
-        		//bid 5
-        		this.updateBid(5);
-        		this.GameStatus = "Bidding";
-        	}else if(xCords > 800 && xCords < 830){
-        		//bid 6
-        		this.updateBid(6);
-        		this.GameStatus = "Bidding";
-        	}else if(xCords > 925 && xCords < 955){
-        		//bid 7
-        		this.updateBid(7);
-        		this.GameStatus = "Bidding";
-        	}else if(xCords > 1050 && xCords < 1080){
-        		//bid 8
-        		this.updateBid(8);
-        		this.GameStatus = "Bidding";
-        	}
-        }
-        
+		var data = checkHumanBid(loc.x, loc.y);
+		if(typeof (data[0]) !== "undefined" && data[0] !== null){
+			this.GameStatus = data[0];
+		}
+
+		if(typeof (data[1]) !== "undefined" && data[1] !== null){
+			this.udpateBid(data[1]);
+		}
+		cc.log('data: ' + JSON.stringify(data));
 	},
 	locationTapped: function(location){ 
 		/*audioEngine.playEffect(s_shootEffect);*/

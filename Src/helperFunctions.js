@@ -27,6 +27,38 @@ var creatAiLabel = function(aiDudesName, x, y){
         return tempAi;
 };
 
+var checkHumanBid = function(xCords, yCords){
+    var bid;
+    var status;
+    if(yCords < 370 && yCords > 325){
+        if(xCords > 335 && xCords < 455){
+            //player is passing
+            bid=0;
+            status = "Bidding";
+        }else if(xCords > 550 && xCords < 580){
+            //bid 4
+            bid=4;
+            status = "Bidding";
+        }else if(xCords > 675 && xCords < 705){
+            //bid 5
+            bid=5;
+            status = "Bidding";
+        }else if(xCords > 800 && xCords < 830){
+            //bid 6
+            bid=6;
+            status = "Bidding";
+        }else if(xCords > 925 && xCords < 955){
+            //bid 7
+            bid=7;
+            status = "Bidding";
+        }else if(xCords > 1050 && xCords < 1080){
+            //bid 8
+            bid=8;
+            status = "Bidding";
+        }
+    }
+    return [status, bid];
+};
 
 var displayCurrentTurn = function(currentTurnIndex) {
     var currentTurnIndicator = cc.Sprite.create(currentTurnImg);
